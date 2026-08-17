@@ -1,0 +1,134 @@
+<div class="contenedor">
+  @if (error(); as mensaje) {
+    <div class="aviso aviso-error" role="alert">{{ mensaje }}</div>
+  }
+
+  @if (cargando()) {
+    <div class="cargando">Cargando tu agenda…</div>
+  }
+
+  @if (!cargando() && agenda(); as datos) {
+    <div class="agenda">
+      <section class="panel columna-agenda">
+        <div class="entre encabezado">
+          <div>
+            <div class="etiqueta">{{ fechaLarga(datos.fecha) }}</div>
+            <h2>Agenda del día — {{ datos.totalDelDia }} {{ datos.totalDelDia === 1 ? 'cita' : 'citas' }}</h2>
+          </div>
+
+          <div class="fila">
+            <button type="button" class="boton boton-secundario" (click)="irA(-1)">Día anterior</button>
+            <button type="button" class="boton boton-secundario" (click)="irA(1)">Día siguiente</button>
+            <button type="button" class="boton boton-secundario" (click)="irAHoy()">Hoy</button>
+          </div>
+        </div>
+
+        @if (filas().length === 0) {
+          <div class="cargando">No hay citas ni horario publicado para este día.</div>
+        }
+
+        <div class="linea">
+          @for (fila of filas(); track fila.hora + (fila.cita?.id ?? '')) {
+            <div class="renglon" [class.activo]="!!fila.cita && seleccionada() !== null && seleccionada()!.id === fila.cita.id">
+              <div class="hora">{{ hora(fila.hora) }}</div>
+
+              @if (fila.cita; as cita) {
+                <button type="button" class="registro" (click)="seleccionar(cita)">
+                  <span class="nombre">{{ cita.paciente }}</span>
+                  <span class="suave pequeno detalle">
+                    {{ cita.motivoConsulta ?? cita.tipoVisita }}
+                    @if (cita.edadPaciente !== null) { · {{ cita.edadPaciente }} años }
+                  </span>
+                  <span [class]="claseChip(cita.estado)">{{ cita.estadoNombre }}</span>
+                </button>
+              } @else {
+                <div class="bloque">{{ fila.espacio }}</div>
+              }
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- Panel del paciente en consulta -->
+      <aside class="panel columna-paciente">
+        @if (seleccionada(); as cita) {
+          <div class="etiqueta">Paciente en consulta</div>
+
+          <h3>{{ cita.paciente }}</h3>
+          <p class="suave pequeno">
+            @if (cita.edadPaciente !== null) { {{ cita.edadPaciente }} años · } Cédula {{ cita.cedulaPaciente }}
+          </p>
+
+          <dl class="ficha">
+            <div>
+              <dt>Motivo</dt>
+              <dd>{{ cita.motivoConsulta ?? '—' }}</dd>
+            </div>
+            <div>
+              <dt>Tipo</dt>
+              <dd>{{ cita.tipoVisita }}</dd>
+            </div>
+            <div>
+              <dt>Última visita</dt>
+              <dd>{{ cita.ultimaVisita ? fechaLarga(cita.ultimaVisita) : 'Sin visitas previas' }}</dd>
+            </div>
+            <div>
+              <dt>Alergias</dt>
+              <dd>{{ cita.alergias ?? 'Ninguna registrada' }}</dd>
+            </div>
+          </dl>
+
+          <div class="campo">
+            <label for="nota">Nota de la consulta</label>
+            <textarea
+              id="nota"
+              rows="4"
+              placeholder="Presión 128/82. Continuar tratamiento; control en 3 meses."
+              [value]="nota()"
+              (input)="nota.set($any($event.target).value)"></textarea>
+          </div>
+
+          @if (esOperable(cita)) {
+            <button type="button" class="boton boton-bloque" [disabled]="guardando()" (click)="marcarAtendida()">
+              {{ guardando() ? 'Guardando…' : 'Marcar como atendida' }}
+            </button>
+            <button
+              type="button"
+              class="boton boton-secundario boton-bloque separada"
+              [disabled]="guardando()"
+              (click)="registrarAusencia()">
+              Registrar ausencia
+            </button>
+          } @else {
+            <div class="aviso aviso-info">Esta cita ya está {{ cita.estadoNombre.toLowerCase() }}.</div>
+            <button
+              type="button"
+              class="boton boton-secundario boton-bloque separada"
+              [disabled]="guardando()"
+              (click)="guardarNota()">
+              Guardar nota
+            </button>
+          }
+        } @else {
+          <div class="etiqueta">Paciente en consulta</div>
+          <p class="suave">Selecciona una cita de la agenda para ver la ficha del paciente.</p>
+        }
+
+        <dl class="indicadores">
+          <div>
+            <dt>Atendidas hoy</dt>
+            <dd>{{ datos.atendidasHoy }} de {{ datos.totalDelDia }}</dd>
+          </div>
+          <div>
+            <dt>Cupos libres</dt>
+            <dd>{{ datos.cuposLibres }}</dd>
+          </div>
+          <div>
+            <dt>Ausencias del mes</dt>
+            <dd>{{ datos.ausenciasDelMes }}</dd>
+          </div>
+        </dl>
+      </aside>
+    </div>
+  }
+</div>

@@ -1,0 +1,27 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+artifacts/
+
+## Angular / Node
+node_modules/
+dist/
+.angular/
+npm-debug.log*
+yarn-error.log*
+
+## Entorno local
+appsettings.Local.json
+*.env
+.env.local
+
+## Salida del canal de correo falso en desarrollo
+correos-salida/
+*.eml
+
+## Sistema operativo
+Thumbs.db
+.DS_Store

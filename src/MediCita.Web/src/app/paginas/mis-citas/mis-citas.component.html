@@ -1,0 +1,135 @@
+<div class="contenedor">
+  <div class="entre cabecera">
+    <h1>Mis citas</h1>
+
+    <div class="fila">
+      <div class="pestanas">
+        <button type="button" [class.activa]="pestana() === 'proximas'" (click)="pestana.set('proximas')">
+          Próximas ({{ proximas().length }})
+        </button>
+        <button type="button" [class.activa]="pestana() === 'historial'" (click)="pestana.set('historial')">
+          Historial
+        </button>
+        <button type="button" [class.activa]="pestana() === 'canceladas'" (click)="pestana.set('canceladas')">
+          Canceladas
+        </button>
+      </div>
+
+      <a class="boton" routerLink="/citas/nueva">Agendar nueva cita</a>
+    </div>
+  </div>
+
+  @if (error(); as mensaje) {
+    <div class="aviso aviso-error" role="alert">{{ mensaje }}</div>
+  }
+
+  @if (cargando()) {
+    <div class="cargando">Cargando tus citas…</div>
+  } @else if (visibles().length === 0) {
+    <div class="panel vacio">
+      <h3>No hay citas en esta vista</h3>
+      <p class="suave">
+        @if (pestana() === 'proximas') {
+          Agenda una cita con los especialistas de la clínica; toma menos de un minuto.
+        } @else {
+          Aquí aparecerán tus citas una vez cambien de estado.
+        }
+      </p>
+    </div>
+  } @else {
+    <div class="lista">
+      @for (cita of visibles(); track cita.id) {
+        <article class="tarjeta cita" [class.destacada]="$first && pestana() === 'proximas'">
+          <div class="momento">
+            <div class="etiqueta-gris">{{ fechaCorta(cita.inicio) }}</div>
+            <div class="hora">{{ hora(cita.inicio) }}</div>
+            <div class="suave pequeno">{{ cita.duracionMinutos }} minutos</div>
+          </div>
+
+          <div class="datos">
+            @if (pestana() === 'proximas' && $first) {
+              <div class="etiqueta">Próxima cita · {{ cuandoFalta(cita.inicio) }}</div>
+            } @else {
+              <div class="etiqueta">{{ cita.estado === 1 ? 'Programada' : cita.estadoNombre }}</div>
+            }
+
+            <h3>{{ cita.medico }} — {{ cita.especialidad }}</h3>
+            <p class="suave pequeno">
+              {{ cita.sucursal }}@if (cita.consultorio) { · Consultorio {{ cita.consultorio }} } · Cita {{ cita.codigo }}
+            </p>
+
+            @if (cita.motivoConsulta) {
+              <p class="suave pequeno motivo">Motivo: {{ cita.motivoConsulta }}</p>
+            }
+          </div>
+
+          <div class="acciones">
+            <span [class]="claseChip(cita.estado)">{{ cita.estadoNombre }}</span>
+
+            @if (cita.estado === 1 || cita.estado === 2) {
+              <button type="button" class="boton boton-secundario" (click)="reprogramar(cita)">Reprogramar</button>
+              <button type="button" class="boton-fantasma" (click)="pedirCancelacion(cita)">Cancelar cita</button>
+            }
+          </div>
+        </article>
+      }
+    </div>
+  }
+
+  @if (historial().length > 0 && pestana() === 'proximas') {
+    <section class="atendidas">
+      <div class="etiqueta-gris">Atendidas recientemente</div>
+
+      <div class="tabla-desplazable">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Médico</th>
+              <th>Especialidad</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (cita of historial().slice(0, 5); track cita.id) {
+              <tr>
+                <td>{{ fechaCorta(cita.inicio) }}</td>
+                <td>{{ cita.medico }}</td>
+                <td>{{ cita.especialidad }}</td>
+                <td><span [class]="claseChip(cita.estado)">{{ cita.estadoNombre }}</span></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+</div>
+
+<!-- Cancelar es una acción destructiva: se confirma antes de ejecutarla. -->
+@if (citaACancelar(); as cita) {
+  <div class="fondo-modal" role="dialog" aria-modal="true" aria-labelledby="tituloCancelar">
+    <div class="modal">
+      <h2 id="tituloCancelar">¿Cancelar esta cita?</h2>
+
+      <p class="mensaje">
+        {{ cita.medico }} — {{ fechaCorta(cita.inicio) }} a las {{ hora12(cita.inicio) }}.
+        El cupo queda libre para otro paciente y se anula el recordatorio pendiente.
+      </p>
+
+      <div class="campo">
+        <label for="motivoCancelacion">Motivo (opcional)</label>
+        <input id="motivoCancelacion" #motivo type="text" placeholder="Ya no puedo asistir" />
+      </div>
+
+      <div class="acciones-modal">
+        <button type="button" class="boton boton-secundario" (click)="citaACancelar.set(null)">
+          Mantener la cita
+        </button>
+        <button type="button" class="boton peligro" [disabled]="cancelando()" (click)="confirmarCancelacion(motivo.value)">
+          {{ cancelando() ? 'Cancelando…' : 'Sí, cancelar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

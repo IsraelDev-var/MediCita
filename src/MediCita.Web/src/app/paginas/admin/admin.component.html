@@ -1,0 +1,317 @@
+<div class="admin">
+  <aside class="lateral">
+    <div class="marca">MediCita</div>
+    <div class="etiqueta-lateral">Administración</div>
+
+    <nav>
+      <button type="button" [class.activo]="seccion() === 'resumen'" (click)="cambiarSeccion('resumen')">Resumen</button>
+      <button type="button" [class.activo]="seccion() === 'medicos'" (click)="cambiarSeccion('medicos')">Médicos</button>
+      <button type="button" [class.activo]="seccion() === 'pacientes'" (click)="cambiarSeccion('pacientes')">Pacientes</button>
+    </nav>
+
+    @if (resumen(); as datos) {
+      <div class="estado-lateral">
+        <div class="etiqueta-lateral">Estado del sistema</div>
+        <div class="linea-estado"><span>API</span><strong>{{ datos.estadoSistema.api }}</strong></div>
+        <div class="linea-estado">
+          <span>Worker</span>
+          <strong>{{ datos.estadoSistema.ultimoCicloWorker ? 'Ciclo ' + hora(datos.estadoSistema.ultimoCicloWorker) : 'Sin latido' }}</strong>
+        </div>
+        <div class="linea-estado"><span>Cola SMTP</span><strong>{{ datos.estadoSistema.colaSmtpPendiente }} pendientes</strong></div>
+        <div class="linea-estado">
+          <span>Base de datos</span>
+          <strong>{{ datos.estadoSistema.baseDeDatosConectada ? 'Conectada' : 'Sin conexión' }}</strong>
+        </div>
+      </div>
+    }
+  </aside>
+
+  <main class="principal">
+    @if (error(); as mensaje) {
+      <div class="aviso aviso-error" role="alert">{{ mensaje }}</div>
+    }
+    @if (aviso(); as mensaje) {
+      <div class="aviso aviso-info">{{ mensaje }}</div>
+    }
+
+    <!-- ================= Resumen ================= -->
+    @if (seccion() === 'resumen') {
+      @if (cargando()) {
+        <div class="cargando">Calculando indicadores…</div>
+      }
+
+      @if (!cargando() && resumen(); as datos) {
+        <div class="entre encabezado">
+          <div>
+            <div class="etiqueta">Semana del {{ fechaLarga(datos.desde) }}</div>
+            <h1>Resumen operativo</h1>
+          </div>
+
+          <div class="fila">
+            <button type="button" class="boton boton-secundario" (click)="semanaAnterior()">Semana anterior</button>
+            <button type="button" class="boton boton-secundario" (click)="semanaSiguiente()">Semana siguiente</button>
+            <button type="button" class="boton boton-secundario" (click)="exportar()">Exportar CSV</button>
+            <button type="button" class="boton" (click)="cambiarSeccion('medicos'); mostrandoFormulario.set(true)">
+              Nuevo médico
+            </button>
+          </div>
+        </div>
+
+        <div class="indicadores">
+          <!-- El ausentismo es la métrica que justifica el recordatorio automático. -->
+          <div class="indicador">
+            <div class="etiqueta">Ausentismo</div>
+            <div class="numero">{{ datos.porcentajeAusentismo }}%</div>
+            <div class="suave pequeno">
+              {{ datos.variacionAusentismo > 0 ? '+' : '' }}{{ datos.variacionAusentismo }} pts vs. semana anterior
+            </div>
+          </div>
+
+          <div class="indicador">
+            <div class="etiqueta">Citas de la semana</div>
+            <div class="numero">{{ datos.citasDeLaSemana }}</div>
+            <div class="suave pequeno">
+              {{ datos.variacionSemanaAnterior > 0 ? '+' : '' }}{{ datos.variacionSemanaAnterior }}% vs. semana anterior
+            </div>
+          </div>
+
+          <div class="indicador">
+            <div class="etiqueta">Ocupación de cupos</div>
+            <div class="numero">{{ datos.ocupacionDeCupos }}%</div>
+            <div class="suave pequeno">{{ datos.cuposPublicados }} cupos publicados</div>
+          </div>
+
+          <div class="indicador">
+            <div class="etiqueta">Recordatorios enviados</div>
+            <div class="numero">{{ datos.recordatoriosEnviados }}</div>
+            <div class="suave pequeno">{{ datos.recordatoriosEnCola }} en cola</div>
+          </div>
+        </div>
+
+        <div class="dos-columnas">
+          <section class="panel">
+            <div class="etiqueta-gris">Citas por día</div>
+
+            <div class="grafico">
+              @for (dia of datos.citasPorDia; track dia.fecha) {
+                <div class="barra-columna">
+                  <div class="valor">{{ dia.citas }}</div>
+                  <div class="barra" [style.height.%]="altura(dia.citas)"
+                       [class.maxima]="dia.citas === maximoDiario() && dia.citas > 0"></div>
+                  <div class="dia">{{ dia.diaCorto }}</div>
+                </div>
+              }
+            </div>
+
+            <div class="etiqueta-gris separador-superior">Médicos activos</div>
+
+            <div class="tabla-desplazable">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Médico</th>
+                    <th>Especialidad</th>
+                    <th>Cupos/sem</th>
+                    <th>Ocupación</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (m of datos.medicosActivos; track m.id) {
+                    <tr>
+                      <td>{{ m.nombre }}</td>
+                      <td>{{ m.especialidad }}</td>
+                      <td>{{ m.cuposSemanales }}</td>
+                      <td>{{ m.ocupacion }}%</td>
+                      <td>
+                        <span class="chip" [class.chip-confirmada]="m.estado === EstadoMedico.Activo">
+                          {{ m.estadoNombre }}
+                        </span>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="etiqueta-gris">Actividad reciente</div>
+
+            <ul class="actividad">
+              @for (a of datos.actividadReciente; track a.momento + a.descripcion) {
+                <li>
+                  <span class="momento">{{ hora(a.momento) }}</span>
+                  <span>{{ a.descripcion }}</span>
+                </li>
+              } @empty {
+                <li class="suave">Todavía no hay movimientos registrados.</li>
+              }
+            </ul>
+          </section>
+        </div>
+      }
+    }
+
+    <!-- ================= Médicos ================= -->
+    @if (seccion() === 'medicos') {
+      <div class="entre encabezado">
+        <h1>Médicos</h1>
+        <button type="button" class="boton" (click)="mostrandoFormulario.set(!mostrandoFormulario())">
+          {{ mostrandoFormulario() ? 'Cerrar formulario' : 'Nuevo médico' }}
+        </button>
+      </div>
+
+      @if (mostrandoFormulario()) {
+        <form class="panel formulario" [formGroup]="formularioMedico" (ngSubmit)="crearMedico()" novalidate>
+          <div class="rejilla">
+            <div class="campo">
+              <label for="cedula">Cédula</label>
+              <input id="cedula" type="text" formControlName="cedula" placeholder="402-1122334-5" />
+            </div>
+            <div class="campo">
+              <label for="exequatur">Exequátur</label>
+              <input id="exequatur" type="text" formControlName="exequatur" placeholder="18-4402" />
+            </div>
+            <div class="campo">
+              <label for="nombre">Nombre</label>
+              <input id="nombre" type="text" formControlName="nombre" />
+            </div>
+            <div class="campo">
+              <label for="apellido">Apellido</label>
+              <input id="apellido" type="text" formControlName="apellido" />
+            </div>
+            <div class="campo">
+              <label for="correo">Correo</label>
+              <input id="correo" type="email" formControlName="correo" />
+            </div>
+            <div class="campo">
+              <label for="telefono">Teléfono</label>
+              <input id="telefono" type="tel" formControlName="telefono" />
+            </div>
+            <div class="campo">
+              <label for="especialidad">Especialidad</label>
+              <select id="especialidad" formControlName="especialidadId">
+                <option value="">Seleccione…</option>
+                @for (e of especialidades(); track e.id) {
+                  <option [value]="e.id">{{ e.nombre }}</option>
+                }
+              </select>
+            </div>
+            <div class="campo">
+              <label for="sucursal">Sucursal</label>
+              <select id="sucursal" formControlName="sucursalId">
+                <option value="">Seleccione…</option>
+                @for (s of sucursales(); track s.id) {
+                  <option [value]="s.id">{{ s.nombre }}</option>
+                }
+              </select>
+            </div>
+            <div class="campo">
+              <label for="consultorio">Consultorio</label>
+              <input id="consultorio" type="text" formControlName="consultorio" placeholder="304" />
+            </div>
+            <div class="campo">
+              <label for="duracion">Duración de la cita (minutos)</label>
+              <input id="duracion" type="number" formControlName="duracionCitaMinutos" min="5" max="240" />
+            </div>
+            <div class="campo">
+              <label for="contrasena">Contraseña inicial</label>
+              <input id="contrasena" type="password" formControlName="contrasena" autocomplete="new-password" />
+            </div>
+          </div>
+
+          <button type="submit" class="boton" [disabled]="guardando()">
+            {{ guardando() ? 'Guardando…' : 'Registrar médico' }}
+          </button>
+        </form>
+      }
+
+      <div class="panel">
+        <div class="tabla-desplazable">
+          <table>
+            <thead>
+              <tr>
+                <th>Médico</th>
+                <th>Especialidad</th>
+                <th>Sede</th>
+                <th>Horario</th>
+                <th>Cupos/sem</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (m of medicos(); track m.id) {
+                <tr>
+                  <td>
+                    <strong>{{ m.nombreCompleto }}</strong>
+                    <div class="suave pequeno">Exequátur {{ m.exequatur }}</div>
+                  </td>
+                  <td>{{ m.especialidad }}</td>
+                  <td>{{ m.sucursal }}@if (m.consultorio) { · {{ m.consultorio }} }</td>
+                  <td>{{ m.resumenHorario }}</td>
+                  <td>{{ m.cuposSemanales }}</td>
+                  <td>
+                    <select [value]="m.estado" (change)="cambiarEstado(m, $any($event.target).value)">
+                      <option [value]="1">Activo</option>
+                      <option [value]="2">De licencia</option>
+                      <option [value]="3">Inactivo</option>
+                    </select>
+                  </td>
+                </tr>
+              } @empty {
+                <tr><td colspan="6" class="suave">No hay médicos registrados.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    <!-- ================= Pacientes ================= -->
+    @if (seccion() === 'pacientes') {
+      <div class="entre encabezado">
+        <h1>Pacientes</h1>
+        <input
+          type="search"
+          class="buscador"
+          placeholder="Buscar por nombre, cédula o correo"
+          (input)="buscarPacientes($any($event.target).value)" />
+      </div>
+
+      <div class="panel">
+        <div class="tabla-desplazable">
+          <table>
+            <thead>
+              <tr>
+                <th>Paciente</th>
+                <th>Cédula</th>
+                <th>Correo</th>
+                <th>Teléfono</th>
+                <th>Edad</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of pacientes(); track p.id) {
+                <tr>
+                  <td>{{ p.nombreCompleto }}</td>
+                  <td>{{ p.cedula }}</td>
+                  <td>{{ p.correo }}</td>
+                  <td>{{ p.telefono ?? '—' }}</td>
+                  <td>{{ p.edad ?? '—' }}</td>
+                </tr>
+              } @empty {
+                <tr><td colspan="5" class="suave">Sin resultados.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- El administrador gestiona la clínica: no ve datos clínicos del paciente. -->
+        <p class="suave pequeno nota">
+          Esta vista no muestra alergias, motivos ni notas de consulta: esos datos solo los ve el médico tratante.
+        </p>
+      </div>
+    }
+  </main>
+</div>

@@ -1,0 +1,52 @@
+# Vista Física (Figura 4): la base de datos vive en un nodo aparte, accesible
+# solo por la red privada en el puerto 1433. La API y el Worker corren en
+# contenedores independientes para que una caída del worker no afecte al agendamiento.
+services:
+  medicita-db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: medicita-db
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "MediCita!2026"
+      MSSQL_PID: "Developer"
+    ports:
+      - "1433:1433"
+    volumes:
+      - medicita-datos:/var/opt/mssql
+    networks:
+      - medicita-red
+
+  medicita-api:
+    build:
+      context: .
+      dockerfile: src/MediCita.Api/Dockerfile
+    container_name: medicita-api
+    depends_on:
+      - medicita-db
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Production"
+      ConnectionStrings__MediCita: "Server=medicita-db,1433;Database=MediCita;User Id=sa;Password=MediCita!2026;TrustServerCertificate=True"
+    ports:
+      - "8080:8080"
+    networks:
+      - medicita-red
+
+  medicita-worker:
+    build:
+      context: .
+      dockerfile: src/MediCita.Worker/Dockerfile
+    container_name: medicita-worker
+    depends_on:
+      - medicita-db
+    environment:
+      DOTNET_ENVIRONMENT: "Production"
+      ConnectionStrings__MediCita: "Server=medicita-db,1433;Database=MediCita;User Id=sa;Password=MediCita!2026;TrustServerCertificate=True"
+    networks:
+      - medicita-red
+
+volumes:
+  medicita-datos:
+
+networks:
+  medicita-red:
+    driver: bridge

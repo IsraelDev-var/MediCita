@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/MediCita.Api/MediCita.Api.csproj" />
+    <Project Path="src/MediCita.Application/MediCita.Application.csproj" />
+    <Project Path="src/MediCita.Domain/MediCita.Domain.csproj" />
+    <Project Path="src/MediCita.Infrastructure/MediCita.Infrastructure.csproj" />
+    <Project Path="src/MediCita.Worker/MediCita.Worker.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/MediCita.UnitTests/MediCita.UnitTests.csproj" />
+  </Folder>
+</Solution>

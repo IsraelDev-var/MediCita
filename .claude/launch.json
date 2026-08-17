@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "medicita-web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["start", "--prefix", "src/MediCita.Web"],
+      "port": 4200
+    }
+  ]
+}

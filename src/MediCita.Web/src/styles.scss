@@ -1,0 +1,342 @@
+/* Sistema visual de MediCita, derivado de los mockups de interfaz.
+   Paleta sobria de dos tonos: azul marino para estructura y azul medio para acción. */
+
+:root {
+  --navy: #22303f;
+  --navy-suave: #2c3d4f;
+  --azul: #5b7fa6;
+  --azul-oscuro: #4a6b8f;
+  --azul-texto: #4a78a8;
+  --azul-tenue: #e8f0f8;
+  --azul-tenue-borde: #cddced;
+
+  --fondo: #f1f1f0;
+  --superficie: #ffffff;
+  --superficie-2: #f7f7f6;
+  --borde: #dcdedf;
+  --borde-fuerte: #c6c9cb;
+
+  --texto: #22303f;
+  --texto-suave: #6b7580;
+  --texto-tenue: #949ba3;
+
+  --peligro: #a6413b;
+  --exito: #3f7d59;
+
+  --radio: 3px;
+  --sombra: 0 1px 2px rgba(34, 48, 63, 0.06);
+  --sombra-modal: 0 18px 48px rgba(34, 48, 63, 0.28);
+
+  --ancho: 1180px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+h1 { font-size: 30px; }
+h2 { font-size: 22px; }
+h3 { font-size: 17px; }
+
+a {
+  color: var(--azul-texto);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* --- Tipografía auxiliar --------------------------------------------------- */
+
+.etiqueta {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--azul-texto);
+}
+
+.etiqueta-gris {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--texto-tenue);
+}
+
+.suave {
+  color: var(--texto-suave);
+}
+
+.pequeno {
+  font-size: 13px;
+}
+
+/* --- Superficies ----------------------------------------------------------- */
+
+.tarjeta {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+}
+
+.panel {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  padding: 22px 24px;
+}
+
+/* --- Controles ------------------------------------------------------------- */
+
+label,
+.campo > span {
+  display: block;
+  font-size: 13px;
+  color: var(--texto-suave);
+  margin-bottom: 6px;
+}
+
+input[type='text'],
+input[type='email'],
+input[type='password'],
+input[type='tel'],
+input[type='date'],
+input[type='search'],
+select,
+textarea {
+  width: 100%;
+  padding: 11px 12px;
+  font: inherit;
+  font-size: 15px;
+  color: var(--texto);
+  background: var(--superficie-2);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  outline: none;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--azul);
+  background: var(--superficie);
+  box-shadow: 0 0 0 3px rgba(91, 127, 166, 0.16);
+}
+
+input.invalido,
+select.invalido {
+  border-color: var(--peligro);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 84px;
+}
+
+.campo {
+  margin-bottom: 16px;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border-radius: var(--radio);
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  font-weight: 600;
+  font-size: 14px;
+  border: 1px solid var(--azul);
+  background: var(--azul);
+  color: #fff;
+}
+
+.boton:hover:not(:disabled) {
+  background: var(--azul-oscuro);
+  border-color: var(--azul-oscuro);
+}
+
+.boton-secundario {
+  background: var(--superficie);
+  color: var(--texto);
+  border-color: var(--borde-fuerte);
+}
+
+.boton-secundario:hover:not(:disabled) {
+  background: var(--superficie-2);
+  border-color: var(--azul);
+}
+
+.boton-fantasma {
+  background: none;
+  border: none;
+  color: var(--azul-texto);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 10px 4px;
+}
+
+.boton-fantasma:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.boton-bloque {
+  width: 100%;
+}
+
+/* --- Estados --------------------------------------------------------------- */
+
+.chip {
+  display: inline-block;
+  padding: 5px 12px;
+  font-size: 13px;
+  border-radius: var(--radio);
+  background: var(--superficie-2);
+  border: 1px solid var(--borde);
+  color: var(--texto-suave);
+  white-space: nowrap;
+}
+
+.chip-confirmada,
+.chip-atendida {
+  background: var(--azul-tenue);
+  border-color: var(--azul-tenue-borde);
+  color: var(--azul-texto);
+}
+
+.chip-pendiente {
+  background: var(--superficie-2);
+}
+
+.chip-cancelada,
+.chip-noasistio {
+  background: #f7efee;
+  border-color: #e6d3d1;
+  color: var(--peligro);
+}
+
+/* --- Tablas ---------------------------------------------------------------- */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  text-align: left;
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--texto-suave);
+  font-weight: 600;
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--borde);
+}
+
+td {
+  padding: 14px 8px;
+  border-bottom: 1px solid var(--borde);
+  font-size: 14px;
+}
+
+/* --- Mensajes -------------------------------------------------------------- */
+
+.aviso {
+  padding: 12px 14px;
+  border-radius: var(--radio);
+  font-size: 14px;
+  border: 1px solid;
+}
+
+.aviso-error {
+  background: #f9f1f0;
+  border-color: #e6d3d1;
+  color: var(--peligro);
+}
+
+.aviso-info {
+  background: var(--azul-tenue);
+  border-color: var(--azul-tenue-borde);
+  color: var(--azul-texto);
+}
+
+/* --- Utilidades ------------------------------------------------------------ */
+
+.contenedor {
+  max-width: var(--ancho);
+  margin: 0 auto;
+  padding: 28px 24px 60px;
+}
+
+.fila {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.entre {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.cargando {
+  padding: 40px;
+  text-align: center;
+  color: var(--texto-suave);
+  font-size: 14px;
+}
+
+@media (max-width: 720px) {
+  h1 { font-size: 24px; }
+
+  .contenedor { padding: 20px 16px 48px; }
+
+  /* Los controles crecen en móvil, como indica la nota del mockup 01. */
+  input,
+  select,
+  textarea,
+  .boton {
+    font-size: 16px;
+  }
+}

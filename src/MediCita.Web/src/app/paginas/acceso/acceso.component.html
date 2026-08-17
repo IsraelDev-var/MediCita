@@ -1,0 +1,159 @@
+<div class="acceso">
+  <!-- Columna de marca: se oculta en móvil, donde queda un solo layout. -->
+  <aside class="marca">
+    <div class="marca-interior">
+      <div class="logo">MediCita</div>
+      <h1>Tu próxima cita, en menos de un minuto.</h1>
+      <p>
+        Agenda, reprograma o cancela con los especialistas de la clínica.
+        Te recordamos por correo 24 horas antes.
+      </p>
+
+      <div class="demostracion">
+        <div class="etiqueta-clara">Usuarios de demostración</div>
+        <button type="button" (click)="usarDemostracion('maria.pena@correo.do')">
+          María Peña · Paciente
+        </button>
+        <button type="button" (click)="usarDemostracion('laura.bencosme@medicita.do')">
+          Dra. Bencosme · Médico
+        </button>
+        <button type="button" (click)="usarDemostracion('admin@medicita.do')">
+          A. Calderón · Administrador
+        </button>
+      </div>
+
+      <div class="pie">Conexión segura · HTTPS</div>
+    </div>
+  </aside>
+
+  <main class="formulario">
+    <div class="caja">
+      <div class="pestanas" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          [class.activa]="pestana() === 'entrar'"
+          [attr.aria-selected]="pestana() === 'entrar'"
+          (click)="cambiarPestana('entrar')">
+          Iniciar sesión
+        </button>
+        <button
+          type="button"
+          role="tab"
+          [class.activa]="pestana() === 'registro'"
+          [attr.aria-selected]="pestana() === 'registro'"
+          (click)="cambiarPestana('registro')">
+          Crear cuenta
+        </button>
+      </div>
+
+      @if (error(); as mensaje) {
+        <div class="aviso aviso-error" role="alert">{{ mensaje }}</div>
+      }
+
+      @if (pestana() === 'entrar') {
+        <form [formGroup]="formularioAcceso" (ngSubmit)="entrar()" novalidate>
+          <h2>Bienvenido de vuelta</h2>
+          <p class="suave pequeno">Ingresa con el correo registrado en la clínica.</p>
+
+          <div class="campo">
+            <label for="correo">Correo electrónico</label>
+            <input
+              id="correo"
+              type="email"
+              formControlName="correo"
+              autocomplete="email"
+              placeholder="maria.pena@correo.do"
+              [class.invalido]="formularioAcceso.controls.correo.touched && formularioAcceso.controls.correo.invalid" />
+          </div>
+
+          <div class="campo">
+            <label for="contrasena">Contraseña</label>
+            <div class="con-boton">
+              <input
+                id="contrasena"
+                [type]="verContrasena() ? 'text' : 'password'"
+                formControlName="contrasena"
+                autocomplete="current-password"
+                [class.invalido]="formularioAcceso.controls.contrasena.touched && formularioAcceso.controls.contrasena.invalid" />
+              <button type="button" class="mostrar" (click)="verContrasena.set(!verContrasena())">
+                {{ verContrasena() ? 'Ocultar' : 'Mostrar' }}
+              </button>
+            </div>
+          </div>
+
+          <label class="mantener">
+            <input type="checkbox" formControlName="mantenerSesion" />
+            <span>Mantener sesión</span>
+          </label>
+
+          <button type="submit" class="boton boton-bloque" [disabled]="enviando()">
+            {{ enviando() ? 'Entrando…' : 'Entrar' }}
+          </button>
+
+          <div class="separador"><span>¿Primera vez?</span></div>
+
+          <button type="button" class="boton boton-secundario boton-bloque" (click)="cambiarPestana('registro')">
+            Registrarme con mi cédula
+          </button>
+        </form>
+      } @else {
+        <form [formGroup]="formularioRegistro" (ngSubmit)="registrar()" novalidate>
+          <h2>Crear cuenta</h2>
+          <p class="suave pequeno">Con tu cédula, correo y teléfono queda lista tu ficha de paciente.</p>
+
+          <div class="campo">
+            <label for="cedula">Cédula</label>
+            <input id="cedula" type="text" formControlName="cedula" placeholder="402-2345678-1"
+              [class.invalido]="formularioRegistro.controls.cedula.touched && formularioRegistro.controls.cedula.invalid" />
+          </div>
+
+          <div class="dos-columnas">
+            <div class="campo">
+              <label for="nombre">Nombre</label>
+              <input id="nombre" type="text" formControlName="nombre" autocomplete="given-name"
+                [class.invalido]="formularioRegistro.controls.nombre.touched && formularioRegistro.controls.nombre.invalid" />
+            </div>
+            <div class="campo">
+              <label for="apellido">Apellido</label>
+              <input id="apellido" type="text" formControlName="apellido" autocomplete="family-name"
+                [class.invalido]="formularioRegistro.controls.apellido.touched && formularioRegistro.controls.apellido.invalid" />
+            </div>
+          </div>
+
+          <div class="campo">
+            <label for="correoRegistro">Correo electrónico</label>
+            <input id="correoRegistro" type="email" formControlName="correo" autocomplete="email"
+              [class.invalido]="formularioRegistro.controls.correo.touched && formularioRegistro.controls.correo.invalid" />
+          </div>
+
+          <div class="dos-columnas">
+            <div class="campo">
+              <label for="telefono">Teléfono</label>
+              <input id="telefono" type="tel" formControlName="telefono" placeholder="809-555-0000" />
+            </div>
+            <div class="campo">
+              <label for="nacimiento">Fecha de nacimiento</label>
+              <input id="nacimiento" type="date" formControlName="fechaNacimiento" />
+            </div>
+          </div>
+
+          <div class="campo">
+            <label for="contrasenaRegistro">Contraseña</label>
+            <input id="contrasenaRegistro" type="password" formControlName="contrasena" autocomplete="new-password"
+              [class.invalido]="formularioRegistro.controls.contrasena.touched && formularioRegistro.controls.contrasena.invalid" />
+            <small class="suave">Mínimo 8 caracteres.</small>
+          </div>
+
+          <button type="submit" class="boton boton-bloque" [disabled]="enviando()">
+            {{ enviando() ? 'Creando cuenta…' : 'Crear cuenta' }}
+          </button>
+        </form>
+      }
+
+      <p class="legal">
+        Al continuar aceptas el manejo de tus datos clínicos según la política de la clínica.
+      </p>
+    </div>
+  </main>
+</div>

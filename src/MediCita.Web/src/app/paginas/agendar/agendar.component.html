@@ -1,0 +1,257 @@
+<div class="contenedor">
+  @if (reprogramandoId()) {
+    <div class="aviso aviso-info reprogramando">
+      Estás reprogramando una cita. El cupo actual queda libre solo cuando el nuevo quede guardado.
+    </div>
+  }
+
+  @if (error(); as mensaje) {
+    <div class="aviso aviso-error" role="alert">{{ mensaje }}</div>
+  }
+
+  <div class="agendar">
+    <!-- ---------- Pasos 1 y 2 ---------- -->
+    <aside class="columna-pasos panel">
+      <div class="etiqueta">Paso 1 · Especialidad</div>
+
+      <div class="campo">
+        <label for="especialidad">Especialidad</label>
+        <select id="especialidad" [value]="especialidadId()" (change)="cambiarEspecialidad($any($event.target).value)">
+          <option value="">Todas</option>
+          @for (e of especialidades(); track e.id) {
+            <option [value]="e.id">{{ e.nombre }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="campo">
+        <label for="sucursal">Sucursal</label>
+        <select id="sucursal" [value]="sucursalId()" (change)="cambiarSucursal($any($event.target).value)">
+          <option value="">Todas</option>
+          @for (s of sucursales(); track s.id) {
+            <option [value]="s.id">{{ s.nombre }}</option>
+          }
+        </select>
+      </div>
+
+      <hr />
+
+      <div class="etiqueta">Paso 2 · Médico</div>
+
+      @if (medicos().length === 0) {
+        <p class="suave pequeno">No hay médicos disponibles con ese filtro.</p>
+      }
+
+      <div class="lista-medicos">
+        @for (m of medicos(); track m.id) {
+          <button
+            type="button"
+            class="medico"
+            [class.elegido]="medicoSeleccionado()?.id === m.id"
+            [disabled]="reprogramandoId() !== null && medicoSeleccionado() !== null && medicoSeleccionado()!.id !== m.id"
+            (click)="elegirMedico(m)">
+            @if (medicoSeleccionado()?.id === m.id) {
+              <span class="etiqueta">Seleccionado</span>
+            }
+            <strong>{{ m.nombreCompleto }}</strong>
+            <span class="suave pequeno">{{ m.especialidad }} · {{ m.resumenHorario }}</span>
+            @if (m.consultorio) {
+              <span class="suave pequeno">{{ m.sucursal }} · Consultorio {{ m.consultorio }}</span>
+            }
+          </button>
+        }
+      </div>
+
+      <p class="nota suave pequeno">
+        La disponibilidad se consulta en vivo contra el horario del médico.
+      </p>
+    </aside>
+
+    <!-- ---------- Paso 3 ---------- -->
+    <section class="columna-cupos panel">
+      @if (!medicoSeleccionado()) {
+        <div class="vacio">
+          <h3>Elige un médico para ver sus cupos</h3>
+          <p class="suave">Los horarios salen del calendario que cada especialista publica.</p>
+        </div>
+      } @else {
+        @if (disponibilidad(); as d) {
+        <div class="entre encabezado">
+          <div>
+            <div class="etiqueta">Paso 3 · Fecha y hora</div>
+            <h2>{{ mes(d.fechaSeleccionada) }}</h2>
+          </div>
+          <div class="fila">
+            <button type="button" class="boton boton-secundario" (click)="semanaAnterior()">Semana anterior</button>
+            <button type="button" class="boton boton-secundario" (click)="semanaSiguiente()">Semana siguiente</button>
+          </div>
+        </div>
+
+        <div class="semana">
+          @for (dia of d.dias; track dia.fecha) {
+            <button
+              type="button"
+              class="dia"
+              [class.activo]="dia.fecha === d.fechaSeleccionada"
+              [class.cerrado]="dia.cerrado"
+              [disabled]="dia.cerrado"
+              (click)="elegirDia(dia.fecha)">
+              <span class="dia-nombre">{{ dia.diaCorto }}</span>
+              <span class="dia-numero">{{ dia.dia }}</span>
+              <span class="dia-cupos">
+                {{ dia.cerrado ? 'Cerrado' : (dia.cuposLibres === 0 ? 'Sin cupos' : dia.cuposLibres + ' cupos') }}
+              </span>
+            </button>
+          }
+        </div>
+
+        @if (cargandoCupos()) {
+          <div class="cargando">Consultando disponibilidad…</div>
+        } @else if (d.cupos.length === 0) {
+          <div class="cargando">Este día no tiene cupos publicados. Prueba con otro día de la semana.</div>
+        } @else {
+          @if (cuposManana().length) {
+            <div class="etiqueta-gris franja">Mañana</div>
+            <div class="cupos">
+              @for (c of cuposManana(); track c.inicio) {
+                <button
+                  type="button"
+                  class="cupo"
+                  [class.elegido]="cupoSeleccionado()?.inicio === c.inicio"
+                  [class.ocupado]="c.estado === EstadoCupo.Ocupado"
+                  [disabled]="c.estado === EstadoCupo.Ocupado"
+                  (click)="elegirCupo(c)">
+                  {{ hora(c.inicio) }}
+                </button>
+              }
+            </div>
+          }
+
+          @if (cuposTarde().length) {
+            <div class="etiqueta-gris franja">Tarde</div>
+            <div class="cupos">
+              @for (c of cuposTarde(); track c.inicio) {
+                <button
+                  type="button"
+                  class="cupo"
+                  [class.elegido]="cupoSeleccionado()?.inicio === c.inicio"
+                  [class.ocupado]="c.estado === EstadoCupo.Ocupado"
+                  [disabled]="c.estado === EstadoCupo.Ocupado"
+                  (click)="elegirCupo(c)">
+                  {{ hora(c.inicio) }}
+                </button>
+              }
+            </div>
+          }
+
+          <!-- Los estados se distinguen por relleno y borde, no solo por color. -->
+          <div class="leyenda">
+            <span><i class="muestra elegido"></i> Seleccionado</span>
+            <span><i class="muestra"></i> Disponible</span>
+            <span><i class="muestra ocupado"></i> Ocupado</span>
+          </div>
+        }
+        } @else {
+          <div class="cargando">Cargando disponibilidad…</div>
+        }
+      }
+    </section>
+
+    <!-- ---------- Resumen ---------- -->
+    <aside class="columna-resumen panel">
+      <div class="etiqueta">Resumen</div>
+
+      <dl class="resumen">
+        <div>
+          <dt>Médico</dt>
+          <dd>{{ medicoSeleccionado()?.nombreCompleto ?? '—' }}</dd>
+        </div>
+        <div>
+          <dt>Especialidad</dt>
+          <dd>{{ medicoSeleccionado()?.especialidad ?? '—' }}</dd>
+        </div>
+        <div>
+          <dt>Fecha</dt>
+          <dd>{{ cupoSeleccionado() ? fechaCorta(cupoSeleccionado()!.inicio) : '—' }}</dd>
+        </div>
+        <div>
+          <dt>Hora</dt>
+          <dd>{{ cupoSeleccionado() ? hora12(cupoSeleccionado()!.inicio) : '—' }}</dd>
+        </div>
+      </dl>
+
+      @if (!reprogramandoId()) {
+        <div class="campo">
+          <label for="motivo">Motivo de consulta (opcional)</label>
+          <textarea
+            id="motivo"
+            rows="3"
+            placeholder="Chequeo de presión arterial"
+            [value]="motivo()"
+            (input)="motivo.set($any($event.target).value)"></textarea>
+        </div>
+      }
+
+      <button type="button" class="boton boton-bloque" [disabled]="!puedeConfirmar()" (click)="confirmar()">
+        {{ enviando() ? 'Confirmando…' : (reprogramandoId() ? 'Confirmar nuevo horario' : 'Confirmar cita') }}
+      </button>
+
+      <a class="boton boton-secundario boton-bloque cancelar" routerLink="/citas">Cancelar</a>
+    </aside>
+  </div>
+</div>
+
+<!-- ---------- Pantalla 03: confirmación ---------- -->
+@if (citaConfirmada(); as cita) {
+  <div class="fondo-modal" role="dialog" aria-modal="true" aria-labelledby="tituloConfirmacion">
+    <div class="modal">
+      <div class="modal-encabezado">
+        <div class="marca-check" aria-hidden="true">✓</div>
+        <div>
+          <div class="etiqueta">Cita {{ cita.codigo }}</div>
+          <h2 id="tituloConfirmacion">Tu cita quedó agendada</h2>
+        </div>
+      </div>
+
+      <dl class="detalle">
+        <div>
+          <dt>Médico</dt>
+          <dd>{{ cita.medico }}</dd>
+        </div>
+        <div>
+          <dt>Especialidad</dt>
+          <dd>{{ cita.especialidad }}</dd>
+        </div>
+        <div>
+          <dt>Fecha y hora</dt>
+          <dd>{{ fechaCorta(cita.inicio) }} · {{ hora12(cita.inicio) }}</dd>
+        </div>
+        <div>
+          <dt>Sede</dt>
+          <dd>{{ cita.sucursal }}@if (cita.consultorio) { · Consultorio {{ cita.consultorio }} }</dd>
+        </div>
+        <div>
+          <dt>Estado</dt>
+          <dd><span class="chip chip-pendiente">{{ cita.estadoNombre }} de confirmar</span></dd>
+        </div>
+      </dl>
+
+      <p class="mensaje">
+        Te enviaremos un recordatorio a <strong>{{ cita.correoPaciente }}</strong>
+        @if (cita.recordatorioProgramado) {
+          el {{ fechaLarga(cita.recordatorioProgramado) }}.
+        } @else {
+          24 horas antes.
+        }
+        Llega 15 minutos antes con tu cédula.
+      </p>
+
+      <div class="acciones">
+        <button type="button" class="boton boton-secundario" (click)="agregarAlCalendario()">
+          Agregar al calendario
+        </button>
+        <button type="button" class="boton" (click)="cerrarConfirmacion()">Ver mis citas</button>
+      </div>
+    </div>
+  </div>
+}

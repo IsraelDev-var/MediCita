@@ -1,0 +1,340 @@
+.agendar {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr) 300px;
+  gap: 20px;
+  align-items: start;
+}
+
+.reprogramando,
+.aviso-error {
+  margin-bottom: 18px;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid var(--borde);
+  margin: 22px 0 18px;
+}
+
+/* --- Pasos 1 y 2 ------------------------------------------------------------ */
+
+.columna-pasos .etiqueta {
+  margin-bottom: 14px;
+}
+
+.lista-medicos {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.medico {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: left;
+  padding: 14px;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  color: var(--texto);
+}
+
+.medico:hover:not(:disabled) {
+  border-color: var(--azul);
+}
+
+.medico.elegido {
+  border-color: var(--azul);
+  box-shadow: inset 3px 0 0 var(--azul);
+  background: var(--superficie-2);
+}
+
+.medico strong {
+  font-size: 15px;
+}
+
+.nota {
+  margin: 24px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--borde);
+}
+
+/* --- Paso 3 ----------------------------------------------------------------- */
+
+.encabezado {
+  margin-bottom: 20px;
+  align-items: flex-start;
+}
+
+.encabezado h2 {
+  margin-top: 4px;
+  text-transform: capitalize;
+}
+
+.semana {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.dia {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 6px;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  color: var(--texto);
+}
+
+.dia:hover:not(:disabled) {
+  border-color: var(--azul);
+}
+
+.dia.activo {
+  background: var(--azul);
+  border-color: var(--azul);
+  color: #fff;
+}
+
+.dia.activo .dia-nombre,
+.dia.activo .dia-cupos {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.dia.cerrado {
+  background: var(--superficie-2);
+  color: var(--texto-tenue);
+}
+
+.dia-nombre {
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  color: var(--texto-suave);
+}
+
+.dia-numero {
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.dia-cupos {
+  font-size: 12px;
+  color: var(--azul-texto);
+}
+
+.franja {
+  margin: 18px 0 10px;
+}
+
+.cupos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: 10px;
+}
+
+.cupo {
+  padding: 13px 8px;
+  font-size: 15px;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  color: var(--texto);
+}
+
+.cupo:hover:not(:disabled) {
+  border-color: var(--azul);
+}
+
+.cupo.elegido {
+  background: var(--azul);
+  border-color: var(--azul);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* El cupo ocupado se distingue por relleno y tachado, no solo por color. */
+.cupo.ocupado {
+  background: var(--superficie-2);
+  color: var(--texto-tenue);
+  text-decoration: line-through;
+  border-style: dashed;
+}
+
+.leyenda {
+  display: flex;
+  gap: 20px;
+  margin-top: 20px;
+  font-size: 13px;
+  color: var(--texto-suave);
+  flex-wrap: wrap;
+}
+
+.leyenda span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.muestra {
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--borde);
+  background: var(--superficie);
+  display: inline-block;
+}
+
+.muestra.elegido {
+  background: var(--azul);
+  border-color: var(--azul);
+}
+
+.muestra.ocupado {
+  background: var(--superficie-2);
+  border-style: dashed;
+}
+
+.vacio {
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.vacio p {
+  margin: 8px 0 0;
+}
+
+/* --- Resumen ----------------------------------------------------------------- */
+
+.resumen {
+  margin: 14px 0 20px;
+}
+
+.resumen > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--borde);
+}
+
+dt {
+  color: var(--texto-suave);
+  font-size: 14px;
+}
+
+dd {
+  margin: 0;
+  font-weight: 600;
+  font-size: 14px;
+  text-align: right;
+}
+
+.cancelar {
+  margin-top: 10px;
+  text-decoration: none;
+}
+
+.cancelar:hover {
+  text-decoration: none;
+}
+
+/* --- Modal de confirmación ---------------------------------------------------- */
+
+.fondo-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(34, 48, 63, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 40;
+}
+
+.modal {
+  background: var(--superficie);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra-modal);
+  padding: 30px;
+  width: 100%;
+  max-width: 520px;
+}
+
+.modal-encabezado {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 22px;
+}
+
+.marca-check {
+  width: 42px;
+  height: 42px;
+  flex: none;
+  border: 1px solid var(--azul);
+  color: var(--azul);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+}
+
+.detalle > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--borde);
+}
+
+.mensaje {
+  margin: 20px 0 24px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.acciones {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+/* --- Responsivo ---------------------------------------------------------------- */
+
+@media (max-width: 1080px) {
+  .agendar {
+    grid-template-columns: 260px minmax(0, 1fr);
+  }
+
+  .columna-resumen {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 760px) {
+  .agendar {
+    grid-template-columns: 1fr;
+  }
+
+  .semana {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .encabezado .fila {
+    width: 100%;
+  }
+
+  .encabezado .fila .boton {
+    flex: 1;
+  }
+
+  .acciones {
+    flex-direction: column-reverse;
+  }
+
+  .acciones .boton {
+    width: 100%;
+  }
+}

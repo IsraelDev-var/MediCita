@@ -1,0 +1,6 @@
+@MediCita.Api_HostAddress = http://localhost:5245
+
+GET {{MediCita.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
