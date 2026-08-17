@@ -13,6 +13,9 @@ dist/
 npm-debug.log*
 yarn-error.log*
 
+## Herramientas locales
+.claude/
+
 ## Entorno local
 appsettings.Local.json
 *.env
